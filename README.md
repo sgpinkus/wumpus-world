@@ -1,5 +1,5 @@
 # OVERVIEW
-Mono-repo for wumpus world game-server, web-viewer, and sample agents. Not meant for non-cooperative envs as it's easy to cheat. Just for local testing.
+Mono-repo for a [wumpus world](https://en.wikipedia.org/wiki/Wumpus_world) (variant) game-server, web-viewer, and sample agents. Not meant for non-cooperative envs as it's easy to cheat. Just for local testing.
 
 ---
 

@@ -18,14 +18,18 @@ const { pickBy, sampleSize } = lodash;
 /**
  * @typedef {'MOVE'|'PICK'|'SHOOT'} Action
  */
-
-export const Directions = ['E', 'NE', 'N', 'NW', 'W', 'SW', 'S', 'SE'];
-export const Percepts = ['B'];
+// export const Directions = ['E', 'NE', 'N', 'NW', 'W', 'SW', 'S', 'SE'];
+export const Directions = {
+  E: [1,0],
+  N: [0,-1],
+  W: [-1, 0],
+  S: [0, 1],
+}
 export const BaseAgent = ['id', 'tag', 'location'];
 export const AgentDefaults = { score: 0, moves: 0, arrows: 3 };
 
 export function assertIsDirection(v) {
-  if(!Directions.includes(v)) throw new Error(`Invalid direction (${v})`);
+  if(!Object.keys(Directions).includes(v)) throw new Error(`Invalid direction (${v})`);
 }
 
 /**
@@ -37,16 +41,7 @@ export function assertIsDirection(v) {
  */
 export function adjacent(x, y, n) {
   /** @type {{[k in Direction]?: [number, number]}} */
-  let _raw = {
-    E: [(x+1), y],
-    NE: [(x+1), (y-1)],
-    N: [x, (y-1)],
-    NW: [(x-1), (y-1)],
-    W: [(x-1), y],
-    SW: [(x-1), (y+1)],
-    S: [x, (y+1)],
-    SE: [(x+1), (y+1)],
-  };
+  let _raw = Object.fromEntries(Object.entries(Directions).map(([k, v]) => ([k, [v[0]+x, v[1]+y]])))
   return Object.fromEntries(
     Object.entries(_raw).filter(([_k, [x, y]]) => !(x < 0 || x >= n || y < 0 || y >= n))
   );
@@ -98,12 +93,16 @@ export class WumpusWorld {
    *
    * @param {number} n size of grid
    * @param {number} pp probability of pit.
+   * @param {number} pg probability of gold.
    */
-  constructor(n, pp=0.1, pg=0.1) {
+  constructor(n, pp=0.1, pg=0.1, dn = 3) {
     if(n <= 0 || n > 10) throw new Error(`Size must be between [0,10] (${n})`);
     if(pp < 0 || pp > 1) throw new Error(`Pit probability must be between [0,1] (${pp})`);
+    if(pg < 0 || pg > 1) throw new Error(`Gold probability must be between [0,1] (${pg})`);
     this.n = n;
     this.pp = pp;
+    this.pg = pg;
+    this.dn = dn;
     this.grid = range(n*n).map(() => new Set([]));
     this.grid.forEach((cell, i) => {
       if(i != 0 && Math.random() < pp) {
@@ -277,9 +276,9 @@ export class WumpusWorld {
     const agent = this.getAgent(agentId);
     const adj = adjacent(...agent.location, this.n);
     const near = Object.values(adj).filter(v => v).map(v => Array.from(this.getCell(...v))).flat();
-    if(near.find((v) => v === 'P')) percepts.push('P');
-    if(near.find((v) => v === 'W')) percepts.push('W');
-    if(near.find((v) => /H.?/.test(v))) percepts.push('H');
+    if(near.find((v) => v === 'P')) percepts.push('B'); // Breeze.
+    if(near.find((v) => v === 'W')) percepts.push('S'); // Stentch.
+    if(near.find((v) => /H.?/.test(v))) percepts.push('R'); // Rival.
     return percepts;
   }
 

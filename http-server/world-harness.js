@@ -20,6 +20,7 @@ class Wrapper {
   state = 'INIT';
   eventTypes = ['new-game', 'game-running', 'game-stopped', 'turn-start', 'turn-end', 'new-agent'];
   allow_new_agents_after_init = true
+  removeDeadAgents = true
 
   constructor() {
     this.reset();
@@ -40,7 +41,7 @@ class Wrapper {
    */
   removeAgent(agentId) {
     let agent = this.world.getAgent(agentId);
-    if(this.state === 'INIT') {
+    if(this.state === 'INIT' || this.removeDeadAgents) {
       this.world.removeAgent(agentId);
       this.events.emit('agent-removed', { agentId });
     } else {
@@ -86,7 +87,7 @@ class Wrapper {
 
   reset() {
     this.state = 'INIT';
-    this.world = new WumpusWorld(10, 0.3, 0.2);
+    this.world = new WumpusWorld(10, 0.2, 0.2, 4);
     this.events.emit('new-game');
   }
 
