@@ -89,7 +89,7 @@ export class WumpusWorld {
   pg = 0;
   /** @type {number} number of wumpus */
   dn = 3;
-  /** @type {Set[]} */
+  /** @type {Set<string>[]} the grid. Each cell may contain a number of char strings indicating what's in them. */
   grid = [];
   /** @type {Agent[]} */
   agents = [];
@@ -226,7 +226,7 @@ export class WumpusWorld {
    *
    * @param {number} x
    * @param {number} y
-   * @returns {Set} cell.
+   * @returns {Set<string>} cell.
    */
   getCell(x, y) {
     const cell = this.grid[cellIndex(x, y, this.n)];
@@ -283,6 +283,11 @@ export class WumpusWorld {
     return percepts;
   }
 
+  /**
+   *
+   * @param {number} agentId
+   * @returns {string[]}
+   */
   getAgentCell(agentId) {
     const agent = this.getAgent(agentId);
     return Array.from(this.getCell(...agent.location));
@@ -292,7 +297,7 @@ export class WumpusWorld {
    *
    * @param {number} agentId
    * @param {string[]} morePercepts
-   * @returns {{ percept: string[], cell: any, agent: Agent }}
+   * @returns {{ percept: string[], cell: string[], agent: Agent }}
    */
   getAgentPercept(agentId, morePercepts = []) {
     return {
