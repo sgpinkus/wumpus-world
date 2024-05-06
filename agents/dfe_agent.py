@@ -39,63 +39,63 @@ class DfeAgent(BaseAgent):
   def __init__(self):
     self.strategies = [PickStrategy()]
     self.reset()
-    self.current_location = None
     self.current_cell = None
     self.current_percept = None
+    self.current_agent_state = None # location, score, and other agent meta provided by server.
 
   def __str__(self):
     return str(f"current_state\t{self.current_location}\n"
-               f"visited\t{list(self.nav_stack)}\n"
+               f"visited\t{list(self.move_stack)}\n"
                f"frontier at current {self.current_location}\t{self._current_frontier()}\n"
     )
 
   def reset(self):
-    self.nav_stack = []
-    self.frontier = {}
+    self.move_stack = []
+    self.frontiers = {} # Unexplored directions for each visited location.
 
   def percept(self, p):
-    self.current_cell, self.current_percept, agent = itemgetter('cell', 'percept', 'agent')(p)
-    self.current_location = tuple(agent['location'])
+    ''' Percept is { percept: string[], cell: string[], agent: Agent }. '''
+    self.current_cell, self.current_percept, self.current_agent_state = itemgetter('cell', 'percept', 'agent')(p)
+
+  @property
+  def current_location(self):
+    return tuple(self.current_agent_state['location'])
 
   def turn(self):
     for strategy in self.strategies:
       action = strategy.move(self)
       if action:
         return action
-    _my_move = None
     if self._visited_current_location():
-        (last_location, last_direction) = self._pop()
+        (last_location, last_direction) = self._pop_move_stack()
         if not last_location:
-          logger.debug('No backtrack but visited node. Resetting memory')
-          self.reset()
-          return self.turn()
+          logger.debug('No backtrack but visited node.')
+          return None
         if self.current_location != last_location:
-          _my_move = _move(_inverse_direction(last_direction))
-    if not _my_move:
-      dir = self._pop_next_direction()
-      if dir:
-        self._push(self.current_location, dir)
-        _my_move = _move(dir)
+          return _move(_inverse_direction(last_direction))
+    else:
+      next_direction = self._pop_next_direction()
+      if next_direction:
+        self._push_move_stack(self.current_location, next_direction)
+        return _move(next_direction)
       else:
-        (last_location, last_direction) = self._pop()
+        (last_location, last_direction) = self._pop_move_stack()
         if not last_location:
-          logger.debug('No backtrack and no more unexplored actions. Resetting memory')
-          self.reset()
-          return self.turn()
-        _my_move = _move(_inverse_direction(last_direction))
-    return _my_move
+          logger.debug('No backtrack and no more unexplored actions.')
+          return None
+        return _move(_inverse_direction(last_direction))
 
-  def _push(self, location, dir):
-    self.nav_stack.append((location, dir))
+  def _push_move_stack(self, location, dir):
+    self.move_stack.append((location, dir))
 
-  def _pop(self):
+  def _pop_move_stack(self):
     try:
-      return self.nav_stack.pop()
+      return self.move_stack.pop()
     except:
       return (None, None)
 
   def _visited_current_location(self):
-    return self.current_location in [l for (l,d) in self.nav_stack]
+    return self.current_location in [l for (l,d) in self.move_stack]
 
   def _pop_next_direction(self):
     ''' Get the next action when in state '''
@@ -106,9 +106,9 @@ class DfeAgent(BaseAgent):
 
   def _current_frontier(self):
     ''' Like get_next_direction, idempotently init actions for state but don't pop one. '''
-    if self.current_location not in self.frontier:
-      self.frontier[self.current_location] = valid_directions.copy()
-    return self.frontier[self.current_location]
+    if self.current_location not in self.frontiers:
+      self.frontiers[self.current_location] = valid_directions.copy()
+    return self.frontiers[self.current_location]
 
 
 def _inverse_direction(move):

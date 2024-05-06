@@ -53,12 +53,13 @@ class Runner():
           elif type == 'turn-start':
             action = self.agent.turn()
             logger.debug(f'Agent chose action: {action}')
-            res = client.post(f'/agent/{agent["id"]}/action/', json=action)
-            assert_ok(res)
-            _percept = res.json()
-            logger.debug(f'Agent receives percept: {_percept}')
-            cell, percept, agent = itemgetter('cell', 'percept', 'agent')(_percept)
-            self.agent.percept(_percept)
+            if action:
+              res = client.post(f'/agent/{agent["id"]}/action/', json=action)
+              assert_ok(res)
+              _percept = res.json()
+              logger.debug(f'Agent receives percept: {_percept}')
+              cell, percept, agent = itemgetter('cell', 'percept', 'agent')(_percept)
+              self.agent.percept(_percept)
           logger.debug(f'Agent {agent}')
     except httpx.ConnectError as e: # Cant connect
       logger.error('ConnectError:', e)
