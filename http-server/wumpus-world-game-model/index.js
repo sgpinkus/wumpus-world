@@ -19,6 +19,13 @@ const { pickBy, sampleSize } = lodash;
  */
 
 /**
+ * @typedef FullPercept
+ * @property {string[]} percept
+ * @property {string[]} cell
+ * @property {Agent} agent
+ */
+
+/**
  * @typedef {'E'|'NE'|'N'|'NW'|'W'|'SW'|'S'|'SE'} Direction
  */
 
@@ -131,6 +138,7 @@ export class WumpusWorld {
    * @param {number} agentId
    * @param {Action} type
    * @param {any} args
+   * @returns {FullPercept}
    */
   action(agentId, type, args) {
     const agent = this.getAgent(agentId);
@@ -242,6 +250,7 @@ export class WumpusWorld {
 
   /**
    * @param {[number, number]} location
+   * @returns {FullPercept}
    */
   addAgent(location = [0, 0], data = {}) {
     if (this.agents.length >= 10) throw new Error('Too many agents');
@@ -261,6 +270,7 @@ export class WumpusWorld {
   /**
    * @param {number} agentId
    * @param {object} update
+   * @returns {Agent}
    */
   setOnAgent(agentId, update) {
     const agent = this.getAgent(agentId);
@@ -268,6 +278,11 @@ export class WumpusWorld {
     return this.agents[agentId]
   }
 
+  /**
+   *
+   * @param {number} agentId
+   * @returns {Agent}
+   */
   getAgent(agentId) {
     const agent = this.agents[agentId];
     if (!agent) throw new Error(`No such agent [${agentId}]`);
@@ -290,7 +305,6 @@ export class WumpusWorld {
   }
 
   /**
-   *
    * @param {number} agentId
    * @returns {string[]}
    */
@@ -300,10 +314,9 @@ export class WumpusWorld {
   }
 
   /**
-   *
    * @param {number} agentId
    * @param {string[]} morePercepts
-   * @returns {{ percept: string[], cell: string[], agent: Agent }}
+   * @returns {FullPercept}
    */
   getAgentPercept(agentId, morePercepts = []) {
     return {

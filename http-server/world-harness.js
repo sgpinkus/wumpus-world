@@ -2,7 +2,7 @@ import { EventEmitter } from 'node:events';
 import { WumpusWorld } from './wumpus-world-game-model/index.js';
 
 
-async function sleep(n=1000) {
+async function sleep(n = 1000) {
   return new Promise((resolve) => setTimeout(resolve, n));
 }
 
@@ -27,7 +27,7 @@ class Wrapper {
   }
 
   addAgent() {
-    if(this.state !== 'INIT' && !this.allow_new_agents_after_init) throw new Error('Cant add agent. Game already started');
+    if (this.state !== 'INIT' && !this.allow_new_agents_after_init) throw new Error('Cant add agent. Game already started');
     const agent = this.world.addAgent();
     this.events.emit('new-agent', agent);
     return agent;
@@ -37,11 +37,10 @@ class Wrapper {
    * Try and remove agent but dont let agent state disappeared in the middle of
    * a game. People wnat to know.
    * @param {number} agentId
-   * @returns
    */
   removeAgent(agentId) {
     let agent = this.world.getAgent(agentId);
-    if(this.state === 'INIT' || this.removeDeadAgents) {
+    if (this.state === 'INIT' || this.removeDeadAgents) {
       this.world.removeAgent(agentId);
       this.events.emit('agent-removed', { agentId });
     } else {
@@ -50,12 +49,12 @@ class Wrapper {
     }
   }
 
-  async _run (runTurns) {
+  async _run(runTurns) {
     try {
       this.state = 'RUNNING';
       this.events.emit('game-running');
       // @ts-ignore
-      for(let i = 0; i < runTurns && this.state !== 'STOPPING'; i++) {
+      for (let i = 0; i < runTurns && this.state !== 'STOPPING'; i++) {
         this.events.emit('turn-start', { i });
         await sleep(this.turnTime); // Wait for inbound actions.
         this.events.emit('turn-end', { i });
@@ -71,8 +70,8 @@ class Wrapper {
    * @returns
    */
   run(runTurns = undefined) {
-    if(this.state === 'RUNNING') throw new Error('Game already running');
-    if(!this.world.agents.length) throw new Error('Game cant run with no agents');
+    if (this.state === 'RUNNING') throw new Error('Game already running');
+    if (!this.world.agents.length) throw new Error('Game cant run with no agents');
     setTimeout(() => this._run(runTurns ?? this.runTurns), 0);
     return this.world.toSerial();
   }
@@ -82,7 +81,7 @@ class Wrapper {
   }
 
   stop() {
-    if(this.state === 'RUNNING') this.state = 'STOPPING';
+    if (this.state === 'RUNNING') this.state = 'STOPPING';
   }
 
   reset() {
