@@ -2,16 +2,20 @@
 @tailwind components;
 @tailwind utilities;
 
-.my-container > div {
+.my-container>div {
   border: solid 1px black;
   border-bottom: 0;
 }
 
-.my-container > div:first-child {
+.my-container>div:first-child {
   border-top: 0;
 }
 
 .game-console-log p {
   font-family: monospace;
   padding: 0.25rem;
+}
+
+.go {
+  display: inline-block;
 }

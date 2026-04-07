@@ -1,0 +1,76 @@
+[MAIN]
+jobs=1
+persistent=yes
+ignore=CVS
+ignore-patterns=
+load-plugins=
+
+[MESSAGES CONTROL]
+disable=
+    useless-suppression,
+    missing-module-docstring,
+    missing-class-docstring,
+    missing-function-docstring
+confidence=
+
+[REPORTS]
+output-format=text
+reports=yes
+
+[FORMAT]
+max-line-length=120
+ignore-long-lines=^\s*(# )?<?https?://\S+>?$
+indent-string="  "
+indent-after-paren=2
+max-module-lines=1000
+
+[BASIC]
+good-names=i,j,k,ex,Run,_
+bad-names=foo,bar,baz,toto,tutu,tata
+
+function-naming-style=snake_case
+variable-naming-style=snake_case
+argument-naming-style=snake_case
+method-naming-style=snake_case
+attr-naming-style=snake_case
+module-naming-style=snake_case
+class-naming-style=PascalCase
+const-naming-style=UPPER_CASE
+
+docstring-min-length=-1
+
+[TYPECHECK]
+ignore-mixin-members=yes
+ignored-classes=optparse.Values,thread._local,_thread._local
+generated-members=
+contextmanager-decorators=contextlib.contextmanager
+
+[VARIABLES]
+dummy-variables-rgx=(_+[a-zA-Z0-9]*?$)|dummy
+callbacks=cb_,_cb
+
+[SIMILARITIES]
+min-similarity-lines=4
+ignore-comments=yes
+ignore-docstrings=yes
+ignore-imports=no
+
+[IMPORTS]
+deprecated-modules=optparse
+known-third-party=enchant
+
+[DESIGN]
+max-args=5
+ignored-argument-names=_.*
+max-locals=15
+max-returns=6
+max-branches=12
+max-statements=50
+max-parents=7
+max-attributes=7
+min-public-methods=2
+max-public-methods=20
+max-bool-expr=5
+
+[EXCEPTIONS]
+overgeneral-exceptions=Exception

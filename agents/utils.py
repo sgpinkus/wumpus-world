@@ -1,11 +1,10 @@
-from operator import itemgetter
-from abc import *
-import logging
-import httpx
 import json
-import random
+import logging
 import sys
+from abc import ABCMeta, abstractmethod
+from operator import itemgetter
 
+import httpx
 
 logger = logging.getLogger('wumpus')
 
@@ -32,7 +31,7 @@ class Runner():
   def run(self):
     try:
       client = httpx.Client(http2=True, verify=False, base_url=self.base_url)
-      res = client.post(f'/agent/join/', data={'type': 'MOVE', 'payload': { 'direction': 'SW' } })
+      res = client.post('/agent/join/', data={'type': 'MOVE', 'payload': {'direction': 'SW'}})
       assert_ok(res)
       _percept = res.json()
       cell, percept, agent = itemgetter('cell', 'percept', 'agent')(_percept)
@@ -61,13 +60,13 @@ class Runner():
               cell, percept, agent = itemgetter('cell', 'percept', 'agent')(_percept)
               self.agent.percept(_percept)
           logger.debug(f'Agent {agent}')
-    except httpx.ConnectError as e: # Cant connect
+    except httpx.ConnectError as e:  # Cant connect
       logger.error('ConnectError:', e)
-    except httpx.RemoteProtocolError as e: # Server closed connection.
+    except httpx.RemoteProtocolError as e:  # Server closed connection.
       logger.error('RemoteProtocolError:', e)
-    except httpx.ReadTimeout as e: # No response was sent within timeout.
+    except httpx.ReadTimeout as e:  # No response was sent within timeout.
       logger.error('ReadTimeout', e)
-    except KeyboardInterrupt as e:
+    except KeyboardInterrupt:
       logger.info('KeyboardInterrupt. Exiting.')
 
 
@@ -79,13 +78,15 @@ def _filter(r):
 
 
 def assert_ok(res: httpx.Response):
-  if 200 <= res.status_code < 300: return True
+  if 200 <= res.status_code < 300:
+    return True
   raise Exception(res.text)
 
 
 def parse_message(m: str):
   type = m[0:4]
-  if type != 'data': raise Exception(f'Unknown message type {type}')
+  if type != 'data':
+    raise Exception(f'Unknown message type {type}')
   data = m[6:].strip('\n')
   data = json.loads(data)
   return [data['type'], data['payload'] if 'payload' in data else None]

@@ -9,7 +9,16 @@ type ScreenState = {
 
 let viewerEvents: EventSource;
 const baseUrl = '';
-const colorWheel = ['red', 'crimson', 'darkorange', 'cyan', 'aqua', 'blue', 'fuchsia', 'deeppink', 'magenta', 'purple'];
+const colorWheel = ['blue',
+  'darkorange',
+  'deeppink',
+  'fuchsia',
+  'aqua',
+  'purple',
+  'red',
+  'cyan',
+  'magenta',
+  'crimson'];
 const [gameState, setGameState] = createStore({
   n: 0,
   grid: {},
@@ -21,34 +30,44 @@ const [gameState, setGameState] = createStore({
 });
 const [screenState, setScreenState] = createSignal<ScreenState>({ state: 'LOADING' });
 const [showSettingsDialog, setShowSettingsDialog] = createSignal<boolean>(false);
-
+const codeMap: Record<string, string> = {
+  'P': String.fromCodePoint(0x1F573),
+  'G': String.fromCodePoint(0x1F4B0),
+  'W': String.fromCodePoint(0x1F47E),
+  'H': String.fromCodePoint(0x1F9B8),
+};
 
 const Legend = () => {
   return (
     <>
-      Agent: <span style={{'font-weight':'bold', 'color': 'red'}}>H</span>&nbsp;
-      Pit: <span style={{'font-weight':'bold'}}>P</span>&nbsp;
-      Gold: <span style={{'color':'gold','font-weight':'bold'}}>G</span>&nbsp;
-      Wumpus: <span style={{'color':'green','font-weight':'bold'}}>W</span>&nbsp;
+      Agent: <span style={{ 'font-weight': 'bold', 'color': 'red' }}>{codeMap['H']}</span>&nbsp;
+      Pit: <span style={{ 'font-weight': 'bold' }}>{codeMap['P']}</span>&nbsp;
+      Gold: <span style={{ 'color': 'gold', 'font-weight': 'bold' }}>{codeMap['G']}</span>&nbsp;
+      Wumpus: <span style={{ 'color': 'green', 'font-weight': 'bold' }}>{codeMap['W']}</span>&nbsp;
     </>
   );
 };
 
 const Grid = (props) => {
-  const GridObject = (s) => {
+  console.log('HERE');
+  const GridObject = (s: string) => {
     const n = () => Number(s.slice(1));
-    return <Switch fallback={<span>{s}</span>}>
+    return <Switch fallback={<span>{codeMap[s] || 'X'}</span>}>
       <Match when={s === 'P'}>
-        <span style={{'font-weight':'bold'}}>P</span>
+        <span class='go' title='pit' style={{ 'font-weight': 'bold' }}>{codeMap[s]}</span>
       </Match>
       <Match when={s === 'G'}>
-        <span style={{'color':'gold','font-weight':'bold'}}>G</span>
+        <span class='go' title='gold' style={{ 'color': 'gold', 'font-weight': 'bold' }}>{codeMap[s]}</span>
       </Match>
       <Match when={s === 'W'}>
-        <span style={{'color':'green','font-weight':'bold'}}>W</span>
+        <span class='go' title='wumpus' style={{ 'color': 'green', 'font-weight': 'bold' }}>{codeMap[s]}</span>
       </Match>
       <Match when={s[0] === 'H'}>
-        <span style={{ color: props.game.agents[n()].gone ? 'gray' : colorWheel[n()], 'font-weight': 'bold' }}>H</span>
+        <span class='go' title='hero' style={{
+          'background-color': props.game.agents[n()].gone ? 'gray' : colorWheel[n()],
+          color: props.game.agents[n()].gone ? 'gray' : colorWheel[n()],
+          'font-weight': 'bold',
+        }}>{codeMap[s[0]]}</span>
       </Match>
     </Switch>;
   };
@@ -60,15 +79,15 @@ const Grid = (props) => {
   return <div classList={gridClass()}>
     <For each={range(props.game.n)}>
       {(y) => (
-          <For each={range(props.game.n)}>
-            {(x) => (
-              <div class='h-14 w-14 border border-solid border-black' style={{'line-height':'1em','overflow-wrap':'anywhere','font-size':'smaller'}}>
-                <For each={props.game.grid[cellIndex(x, y, props.game.n)] || []}>
-                  {(k) => GridObject(k)}
-                </For>
-              </div>
-            )}
-          </For>
+        <For each={range(props.game.n)}>
+          {(x) => (
+            <div class='h-14 w-14 min-h-14 min-w-14 border border-solid border-black' style={{ 'overflow-wrap': 'anywhere', 'font-size': 'smaller' }}>
+              <For each={props.game.grid[cellIndex(x, y, props.game.n)] || []}>
+                {(k) => GridObject(k)}
+              </For>
+            </div>
+          )}
+        </For>
       )}
     </For>
   </div>;
@@ -79,7 +98,7 @@ const MyButton = (props) => {
     return {
       'opacity-50': disabled,
       'cursor-not-allowed': disabled,
-      ... Object.fromEntries('bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 m-2 rounded inline-flex items-center'.split(' ').map(v => [v, true])),
+      ...Object.fromEntries('bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 m-2 rounded inline-flex items-center'.split(' ').map(v => [v, true])),
     };
   };
   return <button classList={buttonClass(props.disabled)} onClick={() => props.onClick()}>{props.children}</button>;
@@ -96,7 +115,7 @@ const SettingsForm = () => {
 
   return <form onChange={onChange} method="dialog"
     class="m-auto w-1/2 mh-1/4 flex flex-col"
-    style={{'border':'solid 1px black','background':'rgba(255, 255, 255,1)'}}
+    style={{ 'border': 'solid 1px black', 'background': 'rgba(255, 255, 255,1)' }}
   >
     <div class='m-4 flex flex-row justify-between'>
       <label>Time per Turn (ms):&nbsp;</label>
@@ -117,7 +136,7 @@ const App: Component = () => {
   onMount(() => setTimeout(init, 400));
   return (
     <div class='my-container mx-auto border-box flex flex-col flex-nowrap h-full'>
-      <div class='game-controls flex flex-row content-center justify-center w-fill' style={{'align-content':'center'}}>
+      <div class='game-controls flex flex-row content-center justify-center w-fill' style={{ 'align-content': 'center' }}>
         <MyButton disabled={!ready()} onClick={(run)}>RUN</MyButton>
         <MyButton disabled={!ready()} onClick={step}>STEP</MyButton>
         <MyButton disabled={!ready()} onClick={stop}>STOP</MyButton>
@@ -132,7 +151,7 @@ const App: Component = () => {
         </MyButton>
       </div>
       <Show when={showSettingsDialog()}>
-        <dialog class="w-full h-full flex flex-col" style={{'background':'rgba(0,0,0,0.5)'}}>
+        <dialog class="w-full h-full flex flex-col" style={{ 'background': 'rgba(0,0,0,0.5)' }}>
           <SettingsForm />
         </dialog>
       </Show>
@@ -146,7 +165,7 @@ const App: Component = () => {
         <div class='flex items-center justify-center h-full'>
           <Switch fallback='Loading ...'>
             <Match when={ready() && gameState.n}>
-              <Grid game={{...gameState}} />
+              <Grid game={{ ...gameState }} />
             </Match>
             <Match when={screenState().state === 'ERROR'}>
               <em>An error happened</em>
@@ -161,7 +180,7 @@ const App: Component = () => {
         <Match when={gameState.agents?.length}>
           <div class='game-score-board grid grid-cols-2 gap-1 my-1 py-1 h-16 flex-grow overflow-y-scroll'>
             <For each={gameState.agents}>{
-              (agent) => <div class='mx-1 px-1' style={{'background-color': agent.gone ? 'gray' : colorWheel[agent.id], 'font-family': 'monospace' }}>{JSON.stringify(agent)}</div>
+              (agent) => <div class='mx-1 px-1' style={{ 'background-color': agent.gone ? 'gray' : colorWheel[agent.id], 'font-family': 'monospace' }}>{JSON.stringify(agent)}</div>
             }</For>
           </div>
         </Match>
@@ -182,18 +201,18 @@ function ready() {
   return screenState().state === 'READY';
 }
 
-function log(m: string, type: 'error' | 'warn' | 'info' | 'debug' = 'info', ...rest) {
-    const eventList = document.querySelector('.game-console-log');
-    const newElement = document.createElement('p');
-    newElement.textContent = `[${type}] ${m}` + (rest.length ? ` [${JSON.stringify(rest)}]` : '');
-    eventList?.appendChild(newElement);
-    newElement.scrollIntoView();
+function log(m: string = '', type: 'error' | 'warn' | 'info' | 'debug' = 'info', ...rest: any[]) {
+  const eventList = document.querySelector('.game-console-log');
+  const newElement = document.createElement('p');
+  newElement.textContent = `[${type}] ${m}` + (rest.length ? ` [${JSON.stringify(rest)}]` : '');
+  eventList?.appendChild(newElement);
+  newElement.scrollIntoView();
 }
 
 function _setScreenState(state: ScreenState['state'], error?: Error) {
   if (state !== screenState().state) {
     if (state === 'ERROR') {
-      log(error?.message, 'error', error);
+      log(error?.message || '', 'error', error);
     }
     log(`${screenState().state} => ${state}`);
   }
@@ -209,11 +228,11 @@ async function init() {
   _setScreenState('LOADING');
   if (!viewerEvents) {
     viewerEvents = new EventSource(baseUrl + '/viewer/events');
-    viewerEvents.onopen = function() {
+    viewerEvents.onopen = function () {
       log('Connection to server events opened');
     };
     viewerEvents.onmessage = newMessage;
-    viewerEvents.onerror = function(e) {
+    viewerEvents.onerror = function (e) {
       log('EventSource failed', 'error', e);
     };
   }
@@ -225,7 +244,7 @@ async function init() {
     setGameState(grid);
     _setScreenState('READY');
   } catch (error) {
-    _setScreenState('ERROR', error);
+    _setScreenState('ERROR', error as Error);
   }
 }
 
@@ -276,8 +295,8 @@ async function run() {
       const e = await res.json();
       log(e.message, 'error');
     }
-  } catch (e) {
-    log(e.message, 'error', e);
+  } catch (e: any) {
+    log(e?.message, 'error', e);
   }
 }
 
@@ -288,8 +307,8 @@ async function step() {
       const e = await res.json();
       log(e.message, 'error');
     }
-  } catch (e) {
-    log(e.message, 'error', e);
+  } catch (e: any) {
+    log(e?.message, 'error', e);
   }
 }
 
@@ -300,16 +319,16 @@ async function stop() {
       const e = await res.json();
       log(e.message, 'error', e);
     }
-  } catch (e) {
-    log(e.message, 'error', e);
+  } catch (e: any) {
+    log(e?.message, 'error', e);
   }
 }
 
 async function restart() {
   try {
     await fetch(baseUrl + '/world/reset', { method: 'POST' });
-  } catch (e) {
-    log(e.message, 'error', e);
+  } catch (e: any) {
+    log(e?.message, 'error', e);
   }
 }
 
@@ -321,8 +340,8 @@ async function updateSettings(settings) {
       headers: { 'Content-Type': 'application/json' },
     });
     setGameState({ ...gameState, ...settings });
-  } catch (e) {
-    log(e.message, 'error', e);
+  } catch (e: any) {
+    log(e?.message, 'error', e);
   }
 }
 
