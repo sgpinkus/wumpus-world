@@ -1,8 +1,9 @@
+from collections import namedtuple
 import json
 import logging
 import sys
 from abc import ABCMeta, abstractmethod
-from typing import Any, TypedDict
+from typing import Any, NamedTuple, TypedDict
 
 import httpx
 from pydantic import BaseModel
@@ -13,6 +14,11 @@ logger = logging.getLogger('wumpus')
 # {percept: string[], cell: string[], agent: Agent}
 
 Location = tuple[int, int]
+
+
+class Move(NamedTuple):
+  location: Location
+  direction: str
 
 
 class Action(TypedDict):

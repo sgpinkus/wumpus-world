@@ -1,30 +1,19 @@
 #!/usr/bin/env python
 '''
-Depth First Exploring agent. Once entire map is explored it just stops. Agent visits many of the same locations
-over and over because of [non]assumptions:
-
-  - Assumes: Same set of movements is available in every state and we know them apriori.
-  - Assumes: Moves are reverisble and we know what the reverse move is.
-  - Assumes: The same move in the same state never results in anything new (determinism).
-  - Does not assume: The outcome of a move (i.e. that south from (0,0) -> (0,1) even though it's deterministic.
-  - Does not assume: The size or shape of the space to be explored.
-  - Does not know: That it has explored the inverse of the direction it took to get to current (see TODO).
-
-TODO: Given the agent has implicit knowledge about what action to take to backtrack (see _inverse_direction)
-it should have implicit knowledge that inverse direction has been explored already.
+Depth First Exploring agent. Once entire map is explored it just stops.
 '''
 from abc import abstractmethod
 import logging
 from typing import Any
 
 import directions as d
-from utils import BaseAgent, FullPerceptData, Location, Runner
+from utils import BaseAgent, FullPerceptData, Location, Move, Runner
 
 logging.basicConfig()
 logger = logging.getLogger('wumpus')
 logger.setLevel(logging.INFO)
 
-NHood = d.Hood4
+NHood: d.DMap = d.Hood4
 
 
 class MyAgent(BaseAgent):
@@ -46,63 +35,49 @@ class PickStrategy():
 class DFEStrategy():
   def __init__(self, agent: MyAgent):
     self.agent = agent
-    self.move_stack: list[tuple[Location, str]] = []
+    self.move_stack: list[Move] = []
     self.frontiers: dict[tuple[int, int], list[str]] = {}  # Unexplored directions for each visited location.
 
   def move(self, _agent: Any):
-    if self._visited_current_location():
-      last = self._pop_move_stack()
-      if not last:
-        logger.debug('No backtrack but visited node.')
+    last_move = self.move_stack[-1] if len(self.move_stack) else None
+    if self._visited_current_location():  # If visited attempt to backtrack
+      self._pop_move_stack()
+      if not last_move:
         return None
-      (last_location, last_direction) = last
-      if self.current_location != last_location:
-        return _move(NHood.inverse_direction(last_direction))
+      if self.current_location != last_move.location:
+        return _move(NHood.inverse_direction(last_move.direction))
       else:
-        pass  # Continue from current location.
-    next_direction = self._get_next_direction()
+        pass  # Last move did nothing, continue.
+    if self.current_location not in self.frontiers:
+      directions = NHood.directions.copy()
+      if last_move:
+        directions.remove(NHood.inverse_direction(last_move.direction))
+      self.frontiers[self.current_location] = directions
+    next_direction = self.frontiers[self.current_location].pop() if len(self.frontiers[self.current_location]) else None
     if next_direction:
       self._push_move_stack(self.current_location, next_direction)
       return _move(next_direction)
-    else:
-      last = self._pop_move_stack()
-      if not last:
-        logger.debug('No backtrack and no more unexplored actions.')
+    else:  # backtrack
+      last_move = self._pop_move_stack()
+      if not last_move:
         return None
-      (last_location, last_direction) = last
-      return _move(NHood.inverse_direction(last_direction))
-
-  def avialable_move(self, _agent: Any):
-    return self._current_frontier()
+      return _move(NHood.inverse_direction(last_move.direction))
 
   def reset(self):
     self.move_stack = []
     self.frontiers = {}  # Unexplored directions for each visited location.
 
   def _push_move_stack(self, location: Location, dir: str):
-    self.move_stack.append((location, dir))
+    self.move_stack.append(Move(location, dir))
 
-  def _pop_move_stack(self) -> tuple[Location, str] | None:
+  def _pop_move_stack(self) -> Move | None:
     try:
       return self.move_stack.pop()
     except:
       return None
 
-  def _get_next_direction(self):
-    ''' Get the next best action from current state. '''
-    try:
-      return self._current_frontier().pop()
-    except Exception:
-      return None
-
   def _visited_current_location(self):
     return self.current_location in [l for (l, _d) in self.move_stack]
-
-  def _current_frontier(self):
-    ''' Like get_next_direction, idempotently init actions for state but don't pop one. '''
-    if self.current_location not in self.frontiers:
-      self.frontiers[self.current_location] = NHood.directions.copy()
-    return self.frontiers[self.current_location]
 
   @property
   def current_location(self) -> Location:
