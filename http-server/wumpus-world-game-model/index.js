@@ -62,7 +62,7 @@ export function adjacent(x, y, n) {
 }
 
 /**
- *
+ * Convert cell x,y coordinate into unique index of the cell if in range.
  * @param {number} x
  * @param {number} y
  * @param {number} n
@@ -237,7 +237,7 @@ export class WumpusWorld {
   }
 
   /**
-   *
+   * Return the content of the x,y cell as a set of chars.
    * @param {number} x
    * @param {number} y
    * @returns {Set<string>} cell.
@@ -305,6 +305,7 @@ export class WumpusWorld {
   }
 
   /**
+   * Get the contents of the cell with agent is as a list of chars.
    * @param {number} agentId
    * @returns {string[]}
    */
