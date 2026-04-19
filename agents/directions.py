@@ -11,6 +11,9 @@ class DMap():
   def __init__(self, dmap: OrderedDict[str, tuple[int, int]]):
     self.dmap = dmap
 
+  def __len__(self):
+    return len(self.dmap)
+
   @property
   def map(self):
     return self.dmap.copy()
@@ -49,6 +52,10 @@ def inverse_direction(dmap: DirectionMap, d: str) -> str:
   return directions[(directions.index(d)+(l//2))%l]
 
 
+def inverse_path(dmap: DirectionMap, dlist: list[str]) -> list[str]:
+  return [inverse_direction(dmap, d) for d in dlist]
+
+
 def neighbour_of_list(dmap: DirectionMap, l: tuple[int, int], n: int = int(1e6)) -> list[tuple[int, int]]:
   _map = offset(dmap, l)
   return list(
@@ -72,7 +79,7 @@ def next(dmap: DirectionMap, l: Location, d: str):
 
 
 # Direction meaning map in *sequence*.
-map4: OrderedDict[str, tuple[int, int]] = OrderedDict({
+map4: DirectionMap = OrderedDict({
   'E': (1, 0),
   'N': (0, -1),
   'W': (-1, 0),

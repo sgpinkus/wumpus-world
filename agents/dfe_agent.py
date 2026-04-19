@@ -36,7 +36,7 @@ class DFEStrategy():
   def __init__(self, agent: MyAgent):
     self.agent = agent
     self.move_stack: list[Move] = []
-    self.frontiers: dict[tuple[int, int], list[str]] = {}  # Unexplored directions for each visited location.
+    self.frontiers: dict[Location, list[str]] = {}  # Unexplored directions for each visited location.
 
   def move(self, _agent: Any):
     last_move = self.move_stack[-1] if len(self.move_stack) else None
@@ -49,10 +49,7 @@ class DFEStrategy():
       else:
         pass  # Last move did nothing, continue.
     if self.current_location not in self.frontiers:
-      directions = NHood.directions.copy()
-      if last_move:
-        directions.remove(NHood.inverse_direction(last_move.direction))
-      self.frontiers[self.current_location] = directions
+      self.frontiers[self.current_location] = [d for d in NHood.directions.copy() if last_move and d != NHood.inverse_direction(last_move.direction)]
     next_direction = self.frontiers[self.current_location].pop() if len(self.frontiers[self.current_location]) else None
     if next_direction:
       self._push_move_stack(self.current_location, next_direction)

@@ -1,58 +1,11 @@
-from collections import namedtuple
 import json
-import logging
 import sys
-from abc import ABCMeta, abstractmethod
-from typing import Any, NamedTuple, TypedDict
+from typing import Any
+from .base_agent import BaseAgent
+from .types import FullPerceptData
+from .const import logger
 
 import httpx
-from pydantic import BaseModel
-
-logger = logging.getLogger('wumpus')
-
-
-# {percept: string[], cell: string[], agent: Agent}
-
-Location = tuple[int, int]
-
-
-class Move(NamedTuple):
-  location: Location
-  direction: str
-
-
-class Action(TypedDict):
-  type: str
-  payload: Any
-
-
-class AgentData(BaseModel):
-  id: int
-  tag: str
-  location: Location  # [number, number] becomes a tuple of ints
-  arrows: int
-  score: int
-  moves: int
-
-
-class FullPerceptData(BaseModel):
-  percept: list[str]
-  cell: list[str]
-  agent: AgentData
-
-
-class BaseAgent(metaclass=ABCMeta):
-  @abstractmethod
-  def __init__(self, percept: FullPerceptData):
-    pass
-  @abstractmethod
-  def turn(self) -> Action | None:
-    pass
-  @abstractmethod
-  def percept(self, p: FullPerceptData):
-    pass
-  def new_agent(self):
-    pass
 
 
 class Runner():
