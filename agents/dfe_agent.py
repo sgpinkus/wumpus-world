@@ -6,7 +6,7 @@ from abc import abstractmethod
 import logging
 from typing import Any
 
-import directions as d
+import utils.directions as d
 from utils import BaseAgent, FullPerceptData, Location, Move, Runner
 
 logging.basicConfig()

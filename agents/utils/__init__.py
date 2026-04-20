@@ -3,6 +3,7 @@ from .types import Action, AgentData, FullPerceptData, Location, Move
 from .const import logger, Scores
 from .runner import assert_ok, parse_message, Runner
 from .tree import path_of, path_to
+from .utils import set_it
 
 __all__ = [
     "BaseAgent",
@@ -18,4 +19,5 @@ __all__ = [
     "Runner",
     "path_of",
     "path_to",
+    "set_it",
 ]

@@ -1,6 +1,5 @@
 
-from directions import DirectionMap, inverse_path
-
+from .directions import DirectionMap, inverse_path
 from .types import Location, Move
 
 

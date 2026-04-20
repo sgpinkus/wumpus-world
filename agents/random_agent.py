@@ -4,7 +4,7 @@ import logging
 import random
 from typing import Any
 from utils import Action, Runner, BaseAgent
-from directions import map4
+from utils.directions import map4
 
 
 logging.basicConfig()

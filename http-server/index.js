@@ -13,4 +13,4 @@ const key = fs.readFileSync(__dirname + '/certs/localhost.key', 'ascii');
 http2.createSecureServer({
   key,
   cert,
-}, app.callback()).listen(3001, () => console.log('Listening 3001'));
+}, app.callback()).listen(3001, '127.0.0.1', () => console.log('Listening 3001'));
