@@ -3,8 +3,7 @@
 import logging
 import random
 from typing import Any
-from utils import Action, Runner, BaseAgent
-from utils.directions import map4
+from utils import Action, Runner, BaseAgent, map4
 
 
 logging.basicConfig()

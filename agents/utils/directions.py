@@ -1,7 +1,6 @@
 from collections import OrderedDict
 from os.path import commonprefix
-
-from utils import Location
+from .types import Location
 
 
 DirectionMap = OrderedDict[str, tuple[int, int]]
